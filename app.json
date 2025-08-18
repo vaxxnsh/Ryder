@@ -12,11 +12,19 @@
       "supportsTablet": true
     },
     "android": {
+     "googleMaps": {
+        "apiKey": "AIzaSyClN_kB8qDQY-5uFop0WsgUGc0jTMA1Ulo"
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.ryder",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -27,7 +35,7 @@
       [
         "expo-router",
         {
-          "origin" : "https://uber.com"
+          "origin": "https://uber.com"
         }
       ],
       [
@@ -38,10 +46,25 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-maps",
+        {
+          "requestLocationPermission": true,
+          "locationPermission": "Allow Ryder to use your location"
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": "https://uber.com"
+      },
+      "eas": {
+        "projectId": "bd900331-57a9-48e9-a323-dd5bf4153000"
+      }
     }
   }
 }
