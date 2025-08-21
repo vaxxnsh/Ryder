@@ -4,6 +4,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import "../global.css";
@@ -40,6 +41,7 @@ export default function RootLayout() {
   }
 
   return (
+    <GestureHandlerRootView className="flex-1">
     <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
       <ClerkLoading>
         <SafeAreaView className="flex-1 items-center justify-center bg-white">
@@ -47,15 +49,15 @@ export default function RootLayout() {
         </SafeAreaView>
       </ClerkLoading>
       <ClerkLoaded>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(root)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{headerShown : false}} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         </ClerkLoaded>
     </ClerkProvider>
-
+    </GestureHandlerRootView>
   );
 }

@@ -1,16 +1,16 @@
-import Map from '@/components/Map';
-import RideCard from '@/components/RideCard';
-import { icons, images } from '@/constants';
-import { useLocationStore } from '@/store/useLocationStore';
-import { Ride } from '@/types/type';
-import { useAuth, useUser } from '@clerk/clerk-expo';
-import { Image } from 'expo-image';
-import * as Location from 'expo-location';
-import { useLocationPermissions } from 'expo-maps';
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import GoogleTextInput from '@/components/GoogleTextInput'
+import Map from '@/components/Map'
+import RideCard from '@/components/RideCard'
+import { icons, images } from '@/constants'
+import { useLocationStore } from '@/store/useLocationStore'
+import { Ride } from '@/types/type'
+import { useAuth, useUser } from '@clerk/clerk-expo'
+import { Image } from 'expo-image'
+import * as Location from "expo-location"
+import { router } from 'expo-router'
+import { useEffect, useState } from 'react'
+import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 const recentRides : Ride[] = [
     {
@@ -112,42 +112,17 @@ const recentRides : Ride[] = [
 ]
 
 
-
 export default function HomePage() {
-  const { user } = useUser();
+  const { user } = useUser()
   const { signOut } = useAuth();
-  const loading = false; // Set to false for demo; adjust as needed
-  const [scrollEnabled, setScrollEnabled] = useState(true);
-  const [status, requestPermission] = useLocationPermissions();
-  const  {setUserLocation} = useLocationStore();
+  const { setUserLocation, setDestinationLocation } = useLocationStore();
+  const loading=true;
 
-  useEffect(() => {
-    (async () => {
-      await requestPermission()
-
-      if (!status || !status.granted) {
-        return;
-      }
-
-      const location = await Location.getCurrentPositionAsync();
-
-      const address = await Location.reverseGeocodeAsync({
-        latitude : location.coords.latitude,
-        longitude : location.coords.longitude
-      })
-
-      setUserLocation({
-        latitude : location.coords.latitude,
-        longitude : location.coords.longitude,
-        address : `${address[0].name}, ${address[1].name}`
-      })
-    })();
-  
-  },[requestPermission, setUserLocation, status])
+  const [, setHasPermission] = useState<boolean>(false);
 
   const handleSignOut = () => {
     signOut();
-    router.replace('/(auth)/sign-in');
+    router.replace("/(auth)/sign-in");
   };
 
   const handleDestinationPress = (location: {
@@ -155,78 +130,106 @@ export default function HomePage() {
     longitude: number;
     address: string;
   }) => {
-    // Handle destination press
+    console.log("in here : ",location.address)
+    setDestinationLocation(location);
+    router.push("/(root)/find-ride");
   };
 
+  const userName = user?.primaryEmailAddress?.emailAddress.split("@")[0];
+
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setHasPermission(false);
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+
+      const address = await Location.reverseGeocodeAsync({
+        latitude: location.coords?.latitude!,
+        longitude: location.coords?.longitude!,
+      });
+
+      setUserLocation({
+        latitude: location.coords?.latitude,
+        longitude: location.coords?.longitude,
+        address: `${address[0].name}, ${address[0].region}`,
+      });
+    })();
+  }, [setUserLocation]);
+
+
   return (
-    <SafeAreaView>
-      <ScrollView>
-        <View>
-          <FlatList
-          data={recentRides.slice(0, 5)}
-          keyExtractor={(item, index) => index.toString()}
-          className="flex-1"
-          contentContainerStyle={{
-            paddingHorizontal: 20,
-            paddingBottom: 100,
-          }}
-          initialNumToRender={5}
-          maxToRenderPerBatch={5}
-          windowSize={5}
-          scrollEnabled={scrollEnabled}
-          keyboardShouldPersistTaps="handled"
-          ListEmptyComponent={() => (
-            <View className="flex flex-col items-center justify-center">
-              {!loading ? (
-                <>
-                  <Image
-                    source={images.noResult}
-                    className="w-40 h-40"
-                    alt="No recent rides found"
-                    resizeMode="contain"
-                  />
-                  <Text className="text-sm">No recent rides found</Text>
-                </>
-              ) : (
-                <ActivityIndicator size="small" color="#000" />
-              )}
-            </View>
-          )}
-          ListHeaderComponent={
-            <>
-              <View className="flex flex-row items-center justify-between my-5">
-                <Text className="text-2xl font-JakartaExtraBold">
-                  Welcome {user?.firstName}👋
-                </Text>
-                <TouchableOpacity
-                  onPress={handleSignOut}
-                  className="justify-center items-center w-10 h-10 rounded-full bg-white"
-                >
-                  <Image source={icons.out} className="w-4 h-4" />
-                </TouchableOpacity>
-              </View>
+    <SafeAreaView className='flex-1'>
+      <FlatList 
+        data={recentRides.slice(0,5)}
+        keyExtractor={(item, index) => index.toString()}
+        className="px-5"
+        initialNumToRender={5}   
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{
+          paddingBottom: 100,
+        }}
+        ListEmptyComponent={() => (
+          <View className="flex flex-col items-center justify-center">
+            {!loading ? (
+              <>
+                <Image
+                  source={images.noResult}
+                  className="w-40 h-40"
+                  alt="No recent rides found"
+                  contentFit="contain"
+                />
+                <Text className="text-sm">No recent rides found</Text>
+              </>
+            ) : (
+              <ActivityIndicator size="small" color="#000" />
+            )}
+          </View>
+        )}
 
-              <Text className="text-xl font-JakartaBold mt-5 mb-3">
-                Your current location
+        ListHeaderComponent={() => (
+          <>
+            <View className="flex flex-row items-center justify-between my-5">
+              <Text className="text-2xl font-JakartaExtraBold">
+                Welcome, {userName}👋
               </Text>
-              <View
-                style={{ height: 300 }}
-                onTouchStart={() => setScrollEnabled(false)}
-                onTouchEnd={() => setScrollEnabled(true)}
-                onTouchCancel={() => setScrollEnabled(true)}
+              <TouchableOpacity
+                onPress={handleSignOut}
+                className="justify-center items-center w-10 h-10 rounded-full bg-white"
               >
-                <Map />
-              </View>
+                <Image source={icons.out} className="w-4 h-4" />
+              </TouchableOpacity>
+            </View>
 
-              <Text className="text-xl font-JakartaBold mt-5 mb-3">
-                Recent Rides
-              </Text>
-            </>
-          }
-          renderItem={({ item }) => <RideCard ride={item} />}
-        />
-        </View>
-      </ScrollView>
+            <GoogleTextInput
+              icon={icons.search}
+              containerStyle="shadow-md shadow-neutral-300"
+              handlePress={handleDestinationPress}
+            />
+
+            <Text className="text-xl font-JakartaBold mt-5 mb-3">
+              Your current location
+            </Text>
+            <View className="bg-transparent h-[300px] w-full">
+              <Map/>
+            </View>
+
+            <Text className="text-xl font-JakartaBold mt-5 mb-3">
+              Recent Rides
+            </Text>
+          </>
+        )}
+
+        renderItem={(ride) => (
+            <RideCard ride={ride.item} />
+        )} 
+      />
     </SafeAreaView>
-  );
+  )
 }

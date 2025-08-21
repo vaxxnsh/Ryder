@@ -10,6 +10,12 @@ declare interface Driver {
   rating: number;
 }
 
+declare type PlaceLocation = { 
+  latitude: number; 
+  longitude: number; 
+  address: string; 
+};
+
 declare interface MarkerData {
   latitude: number;
   longitude: number;
