@@ -156,7 +156,7 @@ export default function HomePage() {
       setUserLocation({
         latitude: location.coords?.latitude,
         longitude: location.coords?.longitude,
-        address: `${address[0].name}, ${address[0].region}`,
+        address: `${address[0].formattedAddress?.split(",")[1]}, ${address[0].region}`,
       });
     })();
   }, [setUserLocation]);
