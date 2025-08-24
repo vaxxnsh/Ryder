@@ -5,7 +5,7 @@ import { useDriverStore, useLocationStore } from '@/store/useLocationStore';
 import { Driver, MarkerData } from '@/types/type';
 import { useImage } from 'expo-image';
 import { AppleMaps, GoogleMaps } from 'expo-maps';
-import { GoogleMapsColorScheme, GoogleMapsMapType } from 'expo-maps/build/google/GoogleMaps.types';
+import { GoogleMapsColorScheme, GoogleMapsMapType, GoogleMapsPolyline } from 'expo-maps/build/google/GoogleMaps.types';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, Text, View } from 'react-native';
 
@@ -25,6 +25,7 @@ export default function Map() {
   const markerIcon = useImage(icons.marker);
   const selectedMarkerIcon = useImage(icons.selectedMarker);
   const { data: drivers, error } = useFetch<Driver[]>("/(api)/driver");
+  let polyLines : GoogleMapsPolyline[] = []
 
   const region = calculateRegion({
     userLatitude,
@@ -67,6 +68,23 @@ export default function Map() {
 
   const zoom = calculateZoom(region.latitudeDelta);
 
+  if(userLatitude && userLongitude && destinationLatitude && destinationLongitude) {
+    polyLines = [
+      {
+        coordinates : [
+          {
+            latitude : userLatitude,
+            longitude : userLongitude
+          },
+          {
+            latitude : destinationLatitude,
+            longitude  : destinationLongitude,
+          }
+        ]
+      }
+    ]
+  }
+
 
   if ((!userLatitude && !userLongitude))
     return (
@@ -105,6 +123,7 @@ export default function Map() {
             mapType: GoogleMapsMapType.NORMAL,
             isIndoorEnabled: true,
           }}
+          polylines={polyLines}
           uiSettings={{
             scrollGesturesEnabled: true,
             scrollGesturesEnabledDuringRotateOrZoom: true,
@@ -138,6 +157,8 @@ export default function Map() {
             zoom,
             
           }}
+
+          
           
         />
       ) : (
